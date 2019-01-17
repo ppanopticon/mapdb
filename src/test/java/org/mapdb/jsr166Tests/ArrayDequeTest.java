@@ -718,7 +718,7 @@ public class ArrayDequeTest extends JSR166TestCase {
         ArrayDeque l = new ArrayDeque();
         l.add(new Object());
         try {
-            l.toArray(null);
+            l.toArray((Object[])null);
             shouldThrow();
         } catch (NullPointerException success) {}
     }
@@ -728,7 +728,7 @@ public class ArrayDequeTest extends JSR166TestCase {
      */
     public void testToArray1_BadArg() {
         ArrayDeque l = new ArrayDeque();
-        l.add(new Integer(5));
+        l.add(5);
         try {
             l.toArray(new String[10]);
             shouldThrow();

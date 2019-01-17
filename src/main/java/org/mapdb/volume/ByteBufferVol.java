@@ -3,8 +3,7 @@ package org.mapdb.volume;
 import org.mapdb.CC;
 import org.mapdb.DBException;
 import org.mapdb.DataInput2;
-import sun.misc.Cleaner;
-import sun.nio.ch.DirectBuffer;
+import sun.misc.Unsafe;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -326,39 +325,8 @@ abstract public class ByteBufferVol extends Volume {
      * There is no public JVM API to unmap buffer, so this tries to use SUN proprietary API for unmap.
      * Any error is silently ignored (for example SUN API does not exist on Android).
      */
-    protected static boolean unmap(MappedByteBuffer b){
-        if(!unmapHackSupported) {
-            return false;
-        }
-
-        if(!(b instanceof DirectBuffer))
-            return false;
-
-        // need to dispose old direct buffer, see bug
-        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4724038
-        DirectBuffer bb = (DirectBuffer) b;
-        Cleaner c = bb.cleaner();
-        if(c!=null){
-            c.clean();
-            return true;
-        }
-        Object attachment = bb.attachment();
-        return attachment!=null &&
-                attachment instanceof DirectBuffer &&
-                attachment!=b &&
-                unmap((MappedByteBuffer) attachment);
-
-    }
-
-    private static boolean unmapHackSupported = true;
-    static{
-        try{
-            //TODO use better way to recognize class?
-            unmapHackSupported = Thread.currentThread().getContextClassLoader().loadClass("sun.nio.ch.DirectBuffer")!=null;
-        }catch(Exception e){
-            LOG.warning("mmap file unmap hack not supported, mmap files will not be closed, sun.nio.ch.DirectBuffer not found");
-            unmapHackSupported = false;
-        }
+    protected static void unmap(MappedByteBuffer b){
+        Unsafe.getUnsafe().invokeCleaner(b);
     }
 
     // Workaround for https://github.com/jankotek/MapDB/issues/326

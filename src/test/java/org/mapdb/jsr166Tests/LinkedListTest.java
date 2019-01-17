@@ -359,7 +359,7 @@ public class LinkedListTest extends JSR166TestCase {
         LinkedList l = new LinkedList();
         l.add(new Object());
         try {
-            l.toArray(null);
+            l.toArray((Object[])null);
             shouldThrow();
         } catch (NullPointerException success) {}
     }
@@ -369,7 +369,7 @@ public class LinkedListTest extends JSR166TestCase {
      */
     public void testToArray1_BadArg() {
         LinkedList l = new LinkedList();
-        l.add(new Integer(5));
+        l.add(5);
         try {
             l.toArray(new String[10]);
             shouldThrow();

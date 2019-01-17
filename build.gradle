@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+}
+
+group 'org.mapdb'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.10
+
+repositories {
+    mavenCentral()
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+dependencies {
+
+    ///// MapDB Elsa
+    compile group: 'org.mapdb', name: 'elsa', version: '3.0.0-M5'
+
+    ///// Eclipse Collections
+    compile group: 'org.eclipse.collections', name: 'eclipse-collections', version: '9.2.0'
+    compile group: 'org.eclipse.collections', name: 'eclipse-collections-api', version: '9.2.0'
+    compile group: 'org.eclipse.collections', name: 'eclipse-collections-forkjoin', version: '9.2.0'
+
+    ///// Google Guava
+    compile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
+
+
+    ///// LZ4 and XxHash
+    compile group: 'net.jpountz.lz4', name: 'lz4', version: '1.3.0'
+
+    ///// Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    ///// JUnit 4 & Testing
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.easytesting', name: 'fest-reflect', version: '1.4.1'
+    testCompile group: 'org.easytesting', name: 'fest-assert', version: '1.4'
+    testCompile group:  'org.eclipse.collections', name: 'eclipse-collections-testutils', version: '9.2.0'
+}
