@@ -28,7 +28,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.logging.Level
 import kotlin.collections.HashMap
 import kotlin.reflect.KClass
-import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.primaryConstructor
 
 /**
@@ -56,31 +55,55 @@ open class DB(
      */
     internal data class CatVal(val msg:(String)->String?, val required:Boolean=true)
 
+
     /**
-     *
+     * The default companion object for [DB]. Holds a registry of all the supported data structures.
+     * Can be used as entry point to ad support for new data structures.
      */
-    companion object{
-
-
-        /** Registry of type names to instances of [Verifier]. Allows for user-extension of different types of storage. */
-        private val VERIFIER_REGISTRY = ConcurrentHashMap<String,Pair<KClass<out Maker<*>>,Verifier>>()
+    companion object {
+        /** Registry of type names to instances of [Maker] and [Verifier]. Allows for user-extension of different types of data structures. */
+        internal val REGISTRY = ConcurrentHashMap<String,Pair<KClass<out Maker<*>>,Verifier>>()
         init {
-            registerVerifierForType("LinkedList", LinkedListMaker::class,LinkedListVerifier)
-            registerVerifierForType("HashMap", HashMapMaker::class,HashMapVerifier)
-            registerVerifierForType("HashSet", HashSetMaker::class,HashSetVerifier)
-            registerVerifierForType("TreeMap", TreeMapMaker::class,TreeMapVerifier)
-            registerVerifierForType("TreeSet", TreeSetMaker::class,TreeSetVerifier)
-            registerVerifierForType("IndexTreeList", IndexTreeListMaker::class,IndexTreeListVerifier)
-            registerVerifierForType("IndexTreeLongLongMap", IndexTreeLongLongMapMaker::class,IndexTreeLongLongMapVerifier)
-            registerVerifierForType("AtomicLong", AtomicLongMaker::class,AtomicPrimitiveVerifier)
-            registerVerifierForType("AtomicInteger", AtomicIntegerMaker::class,AtomicPrimitiveVerifier)
-            registerVerifierForType("AtomicBoolean", AtomicBooleanMaker::class,AtomicPrimitiveVerifier)
-            registerVerifierForType("AtomicString", AtomicStringMaker::class,AtomicPrimitiveVerifier)
-            registerVerifierForType("AtomicVar", AtomicVarMaker::class,AtomicVarVerifier)
+            registerForType("LinkedList", LinkedListMaker::class, LinkedListVerifier)
+            registerForType("HashMap", HashMapMaker::class, HashMapVerifier)
+            registerForType("HashSet", HashSetMaker::class, HashSetVerifier)
+            registerForType("TreeMap", TreeMapMaker::class, TreeMapVerifier)
+            registerForType("TreeSet", TreeSetMaker::class, TreeSetVerifier)
+            registerForType("IndexTreeList", IndexTreeListMaker::class, IndexTreeListVerifier)
+            registerForType("IndexTreeLongLongMap", IndexTreeLongLongMapMaker::class, IndexTreeLongLongMapVerifier)
+            registerForType("AtomicLong", AtomicLongMaker::class, AtomicPrimitiveVerifier)
+            registerForType("AtomicInteger", AtomicIntegerMaker::class, AtomicPrimitiveVerifier)
+            registerForType("AtomicBoolean", AtomicBooleanMaker::class, AtomicPrimitiveVerifier)
+            registerForType("AtomicString", AtomicStringMaker::class, AtomicPrimitiveVerifier)
+            registerForType("AtomicVar", AtomicVarMaker::class, AtomicVarVerifier)
         }
 
-        protected val NAME_CATALOG_SERIALIZER:Serializer<SortedMap<String, String>> = object:Serializer<SortedMap<String, String>>{
 
+        protected val NAMED_SERIALIZATION_HEADER = 1
+
+        /** List of DB objects to be closed */
+        internal val SHUTDOWN_HOOKS = Collections.synchronizedMap(IdentityHashMap<Any, Any>())
+
+        /**
+         * Registers a pair of [Verifier] and [Maker] classes to hook a new type of data structure into [DB].
+         *
+         * @param type The name of the new type of data structure.
+         * @param maker Reference to the [Maker] class.
+         * @param verifier Reference to the [Verifier] class.
+         */
+        fun registerForType(type: String, maker: KClass<out Maker<*>>, verifier: Verifier) {
+            if (REGISTRY[type] != null) throw java.lang.IllegalArgumentException("Registration for provided type '${type}' already exists!")
+            REGISTRY[type] = Pair(maker,verifier)
+        }
+
+        /**
+         * Registers a pair of [Verifier] and [Maker] classes to hook a new type of data structure into [DB].
+         *
+         * @param type The name of the desired data structure.
+         */
+        fun getRegisteredForType(type: String) = REGISTRY.get(type)
+
+        protected val NAME_CATALOG_SERIALIZER:Serializer<SortedMap<String, String>> = object:Serializer<SortedMap<String, String>>{
             override fun deserialize(input: DataInput2, available: Int): SortedMap<String, String>? {
                 val size = input.unpackInt()
                 val ret = TreeMap<String, String>()
@@ -99,47 +122,25 @@ open class DB(
             }
         }
 
-        protected val NAMED_SERIALIZATION_HEADER = 1
-
-        /** list of DB objects to be closed */
-        private val shutdownHooks = Collections.synchronizedMap(IdentityHashMap<Any, Any>())
-
-        private var shutdownHookInstalled = AtomicBoolean(false)
-
         protected fun addShutdownHook(ref:Any){
-            if(shutdownHookInstalled.compareAndSet(false, true)){
-                Runtime.getRuntime().addShutdownHook(object:Thread(){
-                    override fun run() {
-                        for(o in shutdownHooks.keys.toTypedArray()) { //defensive copy, DB.close() modifies the set
-                            try {
-                                var a = o
-                                if (a is Reference<*>)
-                                    a = a.get()
-                                if (a is DB)
-                                    a.close()
-                            } catch(e: Throwable) {
-                                //consume all exceptions from this DB object, so other DBs are also closed
-                                Utils.LOG.log(Level.SEVERE, "DB.close() thrown exception in shutdown hook.", e)
-                            }
+            Runtime.getRuntime().addShutdownHook(object:Thread(){
+                override fun run() {
+                    for(o in SHUTDOWN_HOOKS.keys.toTypedArray()) { //defensive copy, DB.close() modifies the set
+                        try {
+                            var a = o
+                            if (a is Reference<*>)
+                                a = a.get()
+                            if (a is DB)
+                                a.close()
+                        } catch(e: Throwable) {
+                            //consume all exceptions from this DB object, so other DBs are also closed
+                            Utils.LOG.log(Level.SEVERE, "DB.close() thrown exception in shutdown hook.", e)
                         }
                     }
-                })
-            }
-            shutdownHooks.put(ref, ref)
+                }
+            })
+            SHUTDOWN_HOOKS[ref] = ref
         }
-
-        /**
-         *
-         */
-        fun registerVerifierForType(type: String, maker: KClass<out Maker<*>>, verifier: Verifier) {
-            if (VERIFIER_REGISTRY[type] != null) throw java.lang.IllegalArgumentException("Registration for provided type '${type}' already exists!")
-            VERIFIER_REGISTRY[type] = Pair(maker,verifier)
-        }
-
-        /**
-         *
-         */
-        fun getRegisteredVerifierForType(type: String) = VERIFIER_REGISTRY.get(type)
     }
 
     fun getStore():Store{
@@ -155,7 +156,6 @@ open class DB(
         val valueInline = "#valueInline"
         val counterRecids = "#counterRecids"
         val hashSeed = "#hashSeed"
-        val segmentRecids = "#segmentRecids"
         val expireCreateTTL = "#expireCreateTTL"
         val expireUpdateTTL = "#expireUpdateTTL"
         val expireGetTTL = "#expireGetTTL"
@@ -486,7 +486,7 @@ open class DB(
 
         // do not close this DB from JVM shutdown hook
         if(shutdownReference!=null)
-            shutdownHooks.remove(shutdownReference)
+            SHUTDOWN_HOOKS.remove(shutdownReference)
 
         Utils.lockWrite(lock) {
             unknownClassesSave()
@@ -508,7 +508,7 @@ open class DB(
         Utils.lockWrite(lock) {
             checkNotClosed()
             val type = nameCatalogGet(name + Keys.type) ?: throw DBException.WrongConfiguration("Collection has unknown type.")
-            return DB.getRegisteredVerifierForType(name)?.first?.primaryConstructor?.call(this, name)?.open() as E?
+            return DB.getRegisteredForType(name)?.first?.primaryConstructor?.call(this, name)?.open() as E?
         }
     }
 
@@ -651,7 +651,7 @@ open class DB(
             //get type
             known+=name+Keys.type
             val type = catalog[name+Keys.type] ?: throw DBException.WrongConfiguration("Collection has unknown type.")
-            val reqParams = DB.getRegisteredVerifierForType(type)?.second?.expected
+            val reqParams = DB.getRegisteredForType(type)?.second?.expected
             if (reqParams == null){
                 ret += name+Keys.type+": unknown type '$type'"
                 continue@nameLoop
