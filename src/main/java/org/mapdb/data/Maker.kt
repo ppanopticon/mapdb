@@ -5,6 +5,16 @@ import org.mapdb.DBException
 import org.mapdb.Utils
 import java.util.*
 
+
+/**
+ * A factory class for some data structure that can be created through [DB].
+ *
+ * The default implementation of [DB] supports some default data structures. However, it is perfectly possible to
+ * add new structures to [DB] by implementing a [Maker] and registering it through [DB.registerForType].
+ *
+ * @see [DB.registerForType]
+ * @see [DB.getRegisteredForType]
+ */
 abstract class Maker<E>{
     /**
      * Creates new collection if it does not exist, or throw {@link DBException.WrongConfiguration} if collection already exists.

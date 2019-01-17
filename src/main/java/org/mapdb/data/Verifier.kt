@@ -2,6 +2,13 @@ package org.mapdb.data
 
 import org.mapdb.DB
 
+
+/**
+ * A class that facilitates data verification on [Storage] level for some type of [Maker]
+ *
+ * @see [Maker]
+ * @see [DB.registerForType]
+ */
 abstract class Verifier {
 
     val all = {s:String->null}
