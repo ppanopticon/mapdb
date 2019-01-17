@@ -1,16 +1,18 @@
-package org.mapdb
+package org.mapdb.data.indextree
 
 import org.eclipse.collections.api.map.primitive.MutableLongLongMap
+import org.mapdb.Serializer
+import org.mapdb.Store
+import org.mapdb.Utils
 import java.util.*
-import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * [ArrayList] like structure backed by tree
  */
 class IndexTreeList<E> (
-        val store:Store,
-        val serializer:Serializer<E>,
+        val store: Store,
+        val serializer: Serializer<E>,
         val map: MutableLongLongMap,
         val counterRecid:Long,
         val isThreadSafe:Boolean
@@ -159,6 +161,4 @@ class IndexTreeList<E> (
         protected set(size:Int) {
             store.update(counterRecid, size.toLong(), Serializer.LONG_PACKED)
         }
-
-
 }

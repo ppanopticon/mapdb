@@ -1,5 +1,6 @@
 package org.mapdb
 
+import org.mapdb.data.hashmap.HTreeMap
 import org.mapdb.jsr166Tests.ConcurrentHashMapV8Test
 import java.util.concurrent.ConcurrentMap
 

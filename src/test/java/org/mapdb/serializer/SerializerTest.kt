@@ -7,6 +7,7 @@ import java.math.BigInteger
 import java.util.*
 import org.junit.Assert.*
 import org.mapdb.*
+import org.mapdb.data.treemap.BTreeMap
 
 abstract class SerializerTest<E> {
 

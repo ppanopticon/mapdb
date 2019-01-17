@@ -3,6 +3,7 @@ package org.mapdb
 import org.fest.reflect.core.Reflection
 import org.junit.Test
 import org.junit.Assert.*
+import org.mapdb.data.primitive.Atomic
 import java.util.*
 
 /**

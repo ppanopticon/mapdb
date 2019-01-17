@@ -2,7 +2,7 @@ package org.mapdb
 
 import org.junit.Assert.*
 import org.junit.Test
-import java.io.IOException
+import org.mapdb.data.indextree.IndexTreeListJava
 import java.nio.ByteBuffer
 import java.util.*
 

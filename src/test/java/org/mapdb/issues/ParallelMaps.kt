@@ -9,6 +9,8 @@ import org.mapdb.*
 import java.io.Closeable
 import java.util.*
 import org.mapdb.DBMaker.StoreType.*
+import org.mapdb.data.treemap.BTreeMap
+import org.mapdb.data.hashmap.HTreeMap
 
 @org.junit.runner.RunWith(org.junit.runners.Parameterized::class)
 class ParallelMaps(val fab:()-> MutableMap<Any,Any>) {

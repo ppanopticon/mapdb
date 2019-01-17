@@ -2,6 +2,7 @@ package org.mapdb.issues;
 
 import org.junit.Test;
 import org.mapdb.*;
+import org.mapdb.data.hashmap.HTreeMap;
 
 import java.io.File;
 
@@ -27,7 +28,7 @@ public class Issue746Test {
         HTreeMap map = db
                 .hashMap("map")
                 .keySerializer(Serializer.STRING)
-                .valueSerializer(Serializer.JAVA)
+                .valueSerializer(Serializer.STRING)
                 .createOrOpen();
         //Putting data in
 //        System.out.println("Storing data");

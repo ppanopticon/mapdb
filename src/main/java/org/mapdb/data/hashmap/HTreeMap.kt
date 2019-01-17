@@ -1,8 +1,12 @@
-package org.mapdb
+package org.mapdb.data.hashmap
 
 import com.google.common.collect.Iterators
 import org.eclipse.collections.api.map.primitive.MutableLongLongMap
 import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet
+import org.mapdb.*
+import org.mapdb.data.indextree.IndexTreeListJava
+import org.mapdb.data.indextree.IndexTreeLongLongMap
+import org.mapdb.data.treemap.BTreeMap
 import java.io.Closeable
 import java.security.SecureRandom
 
@@ -16,8 +20,8 @@ import java.util.function.BiConsumer
  */
 //TODO there are many casts, catch ClassCastException and return false/null
 class HTreeMap<K,V>(
-        override val keySerializer:Serializer<K>,
-        override val valueSerializer:Serializer<V>,
+        override val keySerializer: Serializer<K>,
+        override val valueSerializer: Serializer<V>,
         val valueInline:Boolean,
         val concShift: Int,
         val dirShift: Int,
@@ -39,26 +43,26 @@ class HTreeMap<K,V>(
         val expireCompactThreshold:Double?,
         override val isThreadSafe:Boolean,
         val valueLoader:((key:K)->V?)?,
-        private val modificationListeners: Array<MapModificationListener<K,V>>?,
+        private val modificationListeners: Array<MapModificationListener<K, V>>?,
         private val closeable:Closeable?,
         val hasValues:Boolean = true
 
         //TODO queue is probably sequentially unsafe
 
-) : ConcurrentMap<K,V>, ConcurrencyAware, MapExtra<K,V>, Verifiable, Closeable{
+) : ConcurrentMap<K,V>, ConcurrencyAware, MapExtra<K, V>, Verifiable, Closeable{
 
 
     companion object{
         /** constructor with default values */
         fun <K,V> make(
-                keySerializer:Serializer<K> = Serializer.ELSA as Serializer<K>,
-                valueSerializer:Serializer<V> = Serializer.ELSA as Serializer<V>,
+                keySerializer: Serializer<K> = Serializer.ELSA as Serializer<K>,
+                valueSerializer: Serializer<V> = Serializer.ELSA as Serializer<V>,
                 valueInline:Boolean = false,
                 concShift: Int = CC.HTREEMAP_CONC_SHIFT,
                 dirShift: Int = CC.HTREEMAP_DIR_SHIFT,
                 levels:Int = CC.HTREEMAP_LEVELS,
-                stores:Array<Store> = Array(1.shl(concShift), {StoreTrivial()}),
-                indexTrees: Array<MutableLongLongMap> = Array(1.shl(concShift), { i->IndexTreeLongLongMap.make(stores[i], levels=levels, dirShift = dirShift)}),
+                stores:Array<Store> = Array(1.shl(concShift), { StoreTrivial() }),
+                indexTrees: Array<MutableLongLongMap> = Array(1.shl(concShift), { i-> IndexTreeLongLongMap.make(stores[i], levels = levels, dirShift = dirShift) }),
                 hashSeed:Int = SecureRandom().nextInt(),
                 counterRecids:LongArray? = null,
                 expireCreateTTL:Long = 0L,
@@ -66,15 +70,15 @@ class HTreeMap<K,V>(
                 expireGetTTL:Long = 0L,
                 expireMaxSize:Long = 0L,
                 expireStoreSize:Long = 0L,
-                expireCreateQueues:Array<QueueLong>? = if(expireCreateTTL<=0L) null else Array(stores.size, { i->QueueLong.make(store = stores[i])}),
-                expireUpdateQueues:Array<QueueLong>? = if(expireUpdateTTL<=0L) null else Array(stores.size, { i->QueueLong.make(store = stores[i])}),
-                expireGetQueues:Array<QueueLong>? = if(expireGetTTL<=0L) null else Array(stores.size, { i->QueueLong.make(store = stores[i])}),
+                expireCreateQueues:Array<QueueLong>? = if(expireCreateTTL<=0L) null else Array(stores.size, { i-> QueueLong.make(store = stores[i]) }),
+                expireUpdateQueues:Array<QueueLong>? = if(expireUpdateTTL<=0L) null else Array(stores.size, { i-> QueueLong.make(store = stores[i]) }),
+                expireGetQueues:Array<QueueLong>? = if(expireGetTTL<=0L) null else Array(stores.size, { i-> QueueLong.make(store = stores[i]) }),
                 expireExecutor:ScheduledExecutorService? = null,
                 expireExecutorPeriod:Long = 0,
                 expireCompactThreshold:Double? = null,
                 isThreadSafe:Boolean = true,
                 valueLoader:((key:K)->V)? = null,
-                modificationListeners: Array<MapModificationListener<K,V>>? = null,
+                modificationListeners: Array<MapModificationListener<K, V>>? = null,
                 closeable: Closeable? = null
         ) = HTreeMap(
                 keySerializer = keySerializer,
@@ -102,7 +106,7 @@ class HTreeMap<K,V>(
                 valueLoader = valueLoader,
                 modificationListeners = modificationListeners,
                 closeable = closeable
-            )
+        )
 
         @JvmField protected val QUEUE_CREATE=1L
         @JvmField protected val QUEUE_UPDATE=2L
@@ -113,7 +117,7 @@ class HTreeMap<K,V>(
 
     private val storesUniqueCount = Utils.identityCount(stores)
 
-    protected val locks:Array<ReadWriteLock?> = Array(segmentCount, {Utils.newReadWriteLock(isThreadSafe)})
+    protected val locks:Array<ReadWriteLock?> = Array(segmentCount, { Utils.newReadWriteLock(isThreadSafe) })
 
     /** true if Eviction is executed inside user thread, as part of get/put etc operations */
     val isForegroundEviction:Boolean = expireExecutor==null &&
@@ -130,9 +134,9 @@ class HTreeMap<K,V>(
             throw IllegalArgumentException("expireUpdateQueues size wrong")
         if(expireGetQueues!=null && segmentCount!=expireGetQueues.size)
             throw IllegalArgumentException("expireGetQueues size wrong")
-        if(BTreeMap.NO_VAL_SERIALIZER==valueSerializer && hasValues)
+        if(BTreeMap.NO_VAL_SERIALIZER ==valueSerializer && hasValues)
             throw IllegalArgumentException("wrong value serializer")
-        if(BTreeMap.NO_VAL_SERIALIZER!=valueSerializer && !hasValues)
+        if(BTreeMap.NO_VAL_SERIALIZER !=valueSerializer && !hasValues)
             throw IllegalArgumentException("wrong value serializer")
         if(!hasValues && !valueInline){
             throw IllegalArgumentException("value inline must be enabled for KeySet")
@@ -158,7 +162,7 @@ class HTreeMap<K,V>(
     }
 
 
-    private fun leafValueInlineSerializer() = object: Serializer<Array<Any>>{
+    private fun leafValueInlineSerializer() = object: Serializer<Array<Any>> {
         override fun serialize(out: DataOutput2, value: kotlin.Array<Any>) {
             out.packInt(value.size)
             for(i in 0 until value.size step 3) {
@@ -184,7 +188,7 @@ class HTreeMap<K,V>(
         }
     }
 
-    private fun leafKeySetSerializer() = object: Serializer<Array<Any>>{
+    private fun leafKeySetSerializer() = object: Serializer<Array<Any>> {
         override fun serialize(out: DataOutput2, value: kotlin.Array<Any>) {
             out.packInt(value.size)
             for(i in 0 until value.size step 3) {
@@ -211,7 +215,7 @@ class HTreeMap<K,V>(
 
 
 
-    private fun leafValueExternalSerializer() = object: Serializer<Array<Any>>{
+    private fun leafValueExternalSerializer() = object: Serializer<Array<Any>> {
         override fun serialize(out: DataOutput2, value: Array<Any>) {
             out.packInt(value.size)
             for(i in 0 until value.size step 3) {
@@ -240,7 +244,7 @@ class HTreeMap<K,V>(
 
 
     //TODO Expiration QueueID is part of leaf, remove it if expiration is disabled!
-    protected val leafSerializer:Serializer<Array<Any>> =
+    protected val leafSerializer: Serializer<Array<Any>> =
             if(!hasValues)
                 leafKeySetSerializer()
             else if(valueInline)
@@ -567,8 +571,8 @@ class HTreeMap<K,V>(
                 expireGetQueues?.get(segment)?.clear()
                 indexTree.clear()
 
-                if(counterRecids!=null)
-                    store.update(counterRecids[segment],0L, Serializer.LONG_PACKED)
+                if (counterRecids != null)
+                    store.update(counterRecids[segment], 0L, Serializer.LONG_PACKED)
             }
         }
     }
@@ -704,11 +708,11 @@ class HTreeMap<K,V>(
         var ret = 0L
         for(segment in 0 until segmentCount) {
 
-            Utils.lockRead(locks[segment]){
-                if(counterRecids!=null){
+            Utils.lockRead(locks[segment]) {
+                if (counterRecids != null) {
                     ret += stores[segment].get(counterRecids[segment], Serializer.LONG_PACKED)
                             ?: throw DBException.DataCorruption("counter not found")
-                }else {
+                } else {
                     indexTrees[segment].forEachKeyValue { index, leafRecid ->
                         val leaf = leafGet(stores[segment], leafRecid)
                         ret += leaf.size / 3
@@ -966,7 +970,7 @@ class HTreeMap<K,V>(
 
     }
 
-    class KeySet<K>(val map:HTreeMap<K,Any?>): AbstractSet<K>(){
+    class KeySet<K>(val map: HTreeMap<K, Any?>): AbstractSet<K>(){
 
         override fun iterator(): MutableIterator<K?> {
             val iters = (0 until map.segmentCount).map{segment->
@@ -1003,7 +1007,7 @@ class HTreeMap<K,V>(
         }
     }
 
-    override val keys: MutableSet<K> = KeySet(this as HTreeMap<K,Any?>)
+    override val keys: MutableSet<K> = KeySet(this as HTreeMap<K, Any?>)
 
     override val values: MutableCollection<V?> = object : AbstractCollection<V>(){
 
@@ -1318,7 +1322,7 @@ class HTreeMap<K,V>(
                             }
                         }
                         if(!found)
-                            throw DBException.DataCorruption("value from Queue not found in leaf $leafRecid "+Arrays.toString(leaf))
+                            throw DBException.DataCorruption("value from Queue not found in leaf $leafRecid " + Arrays.toString(leaf))
 
                         if(expireRecids.remove(expireRecid).not())
                             throw DBException.DataCorruption("expireRecid not part of IndexTree")
@@ -1357,18 +1361,18 @@ class HTreeMap<K,V>(
         var collision = 0L
         var size = 0L
 
-        for(segment in 0 until segmentCount) Utils.lockRead(locks[segment]){
+        for(segment in 0 until segmentCount) Utils.lockRead(locks[segment]) {
             indexTrees[segment].forEachValue { leafRecid ->
                 val leaf = leafGet(stores[segment], leafRecid)
-                size += leaf.size/3
-                collision += leaf.size/3-1
+                size += leaf.size / 3
+                collision += leaf.size / 3 - 1
             }
         }
 
         return Pair(collision, size)
     }
 
-    protected fun leafGet(store:Store, leafRecid:Long):Array<Any>{
+    protected fun leafGet(store: Store, leafRecid:Long):Array<Any>{
         val leaf = store.get(leafRecid, leafSerializer)
                 ?: throw DBException.DataCorruption("linked leaf not found")
         if(CC.ASSERT && leaf.size%3!=0)

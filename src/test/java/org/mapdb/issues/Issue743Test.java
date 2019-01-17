@@ -2,6 +2,7 @@ package org.mapdb.issues;
 
 import org.junit.Test;
 import org.mapdb.*;
+import org.mapdb.data.treemap.BTreeMap;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -14,9 +15,8 @@ public class Issue743Test {
                 .closeOnJvmShutdown()
                 .make();
 
-        BTreeMap<Integer,String> testMap = db.treeMap("test",
-                Serializer.INTEGER,
-                Serializer.JAVA )
+        BTreeMap<Integer,String> testMap = db
+                .treeMap("test", Serializer.INTEGER, Serializer.STRING)
                 .counterEnable()
                 .createOrOpen();
 

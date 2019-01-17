@@ -1,6 +1,7 @@
 package org.mapdb;
 
 import junit.framework.TestCase;
+import org.mapdb.data.primitive.Atomic;
 
 public class AtomicStringTest extends TestCase {
 

@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.Assert.*
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.io.IOException
+import org.mapdb.data.hashmap.HTreeMap
 import java.util.concurrent.ConcurrentMap
 
 /**

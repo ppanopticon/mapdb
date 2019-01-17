@@ -1,7 +1,8 @@
 package org.mapdb
 
 import org.eclipse.collections.impl.list.mutable.primitive.LongArrayList
-import org.mapdb.BTreeMapJava.*
+import org.mapdb.data.treemap.BTreeMapJava
+import org.mapdb.data.treemap.BTreeMapJava.*
 import org.mapdb.serializer.GroupSerializer
 import java.util.*
 

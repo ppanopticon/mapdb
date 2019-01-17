@@ -6,8 +6,10 @@ import org.fest.reflect.core.Reflection
 import org.junit.Assert.*
 import org.junit.Ignore
 import org.junit.Test
-import org.mapdb.BTreeMapJava.*
+import org.mapdb.data.treemap.BTreeMapJava.*
 import org.mapdb.StoreAccess.calculateFreeSize
+import org.mapdb.data.treemap.BTreeMap
+import org.mapdb.data.treemap.BTreeMapJava
 import java.io.IOException
 import java.math.BigInteger
 import java.util.*
@@ -23,18 +25,18 @@ class BTreeMapTest {
     val keyser = Serializer.ELSA
     val COMPARATOR = keyser
 
-    val BTreeMap<*,*>.nodeSerializer:Serializer<Node>
+    val BTreeMap<*, *>.nodeSerializer:Serializer<Node>
         get() = Reflection.method("getNodeSerializer").`in`(this).invoke() as Serializer<Node>
 
 
-    val BTreeMap<*,*>.leftEdges:MutableLongList
+    val BTreeMap<*, *>.leftEdges:MutableLongList
         get() = Reflection.method("getLeftEdges").`in`(this).invoke() as MutableLongList
 
-    val BTreeMap<*,*>.locks: ConcurrentHashMap<Long, Long>
+    val BTreeMap<*, *>.locks: ConcurrentHashMap<Long, Long>
         get() = Reflection.method("getLocks").`in`(this).invoke() as ConcurrentHashMap<Long, Long>
 
 
-    fun BTreeMap<*,*>.loadLeftEdges(): MutableLongList =
+    fun BTreeMap<*, *>.loadLeftEdges(): MutableLongList =
             Reflection.method("loadLeftEdges")
                     .`in`(this)
                     .invoke() as MutableLongList
@@ -1029,7 +1031,7 @@ class BTreeMapTest {
     @Test fun mod_listener_lock() {
         val db = DBMaker.memoryDB().make()
         val counter = AtomicInteger()
-        var m:BTreeMap<String,String>? = null;
+        var m: BTreeMap<String, String>? = null;
         var rootRecid = 0L
         m = db.treeMap("name", Serializer.STRING, Serializer.STRING)
                 .modificationListener(object : MapModificationListener<String,String> {

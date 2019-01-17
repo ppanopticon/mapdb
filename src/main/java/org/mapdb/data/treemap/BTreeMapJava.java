@@ -1,7 +1,8 @@
-package org.mapdb;
+package org.mapdb.data.treemap;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mapdb.*;
 import org.mapdb.serializer.GroupSerializer;
 
 import java.io.Closeable;
@@ -17,23 +18,23 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class BTreeMapJava {
 
-    static final int DIR = 1<<3;
-    static final int LEFT = 1<<2;
-    static final int RIGHT = 1<<1;
-    static final int LAST_KEY_DOUBLE = 1;
+    public static final int DIR = 1<<3;
+    public static final int LEFT = 1<<2;
+    public static final int RIGHT = 1<<1;
+    public static final int LAST_KEY_DOUBLE = 1;
 
     public static class Node{
 
         /** bit flags (dir, left most, right most, next key equal to last...) */
-        final byte flags;
+        public final byte flags;
         /** link to next node */
-        final long link;
+        public final long link;
         /** represents keys */
-        final Object keys;
+        public final Object keys;
         /** represents values for leaf node, or ArrayLong of children for dir node  */
-        final Object values;
+        public final Object values;
 
-        Node(int flags, long link, Object keys, Object values){
+        public Node(int flags, long link, Object keys, Object values){
             this.flags = (byte)flags;
             this.link = link;
             this.keys = keys;
@@ -52,40 +53,40 @@ public class BTreeMapJava {
                 throw new AssertionError();
         }
 
-        int intDir(){
+        public int intDir(){
             return (flags>>>3)&1;
         }
 
-        int intLeftEdge(){
+        public int intLeftEdge(){
             return (flags>>>2)&1;
         }
 
-        int intRightEdge(){
+        public int intRightEdge(){
             return (flags>>>1)&1;
         }
 
-        int intLastKeyTwice(){
+        public int intLastKeyTwice(){
             return flags&1;
         }
 
 
-        boolean isDir(){
+        public boolean isDir(){
             return ((flags>>>3)&1)==1;
         }
 
-        boolean isLeftEdge(){
+        public boolean isLeftEdge(){
             return ((flags>>>2)&1)==1;
         }
 
-        boolean isRightEdge(){
+        public boolean isRightEdge(){
             return ((flags>>>1)&1)==1;
         }
 
-        boolean isLastKeyDouble(){
+        public boolean isLastKeyDouble(){
             return ((flags)&1)==1;
         }
 
-        boolean isEmpty(GroupSerializer keySerializer){
+        public boolean isEmpty(GroupSerializer keySerializer){
             int keySize = keySerializer.valueArraySize(keys);
             return !isLastKeyDouble() && keySize == 2-intLeftEdge()-intRightEdge();
         }
@@ -133,13 +134,13 @@ public class BTreeMapJava {
         }
     }
 
-    public static class NodeSerializer implements Serializer<Node>{
+    public static class NodeSerializer implements Serializer<Node> {
 
         final GroupSerializer keySerializer;
         final Comparator comparator;
         final GroupSerializer valueSerializer;
 
-        NodeSerializer(GroupSerializer keySerializer, Comparator comparator, GroupSerializer valueSerializer) {
+        public NodeSerializer(GroupSerializer keySerializer, Comparator comparator, GroupSerializer valueSerializer) {
             this.keySerializer = keySerializer;
             this.comparator = comparator;
             this.valueSerializer = valueSerializer;
@@ -217,7 +218,7 @@ public class BTreeMapJava {
 
 
 
-    static long findChild(GroupSerializer keySerializer, Node node, Comparator comparator, Object key){
+    public static long findChild(GroupSerializer keySerializer, Node node, Comparator comparator, Object key){
         if(CC.ASSERT && !node.isDir())
             throw new AssertionError();
         //find an index
@@ -240,19 +241,19 @@ public class BTreeMapJava {
 
 
 
-    static final Object LINK = new Object(){
+    public static final Object LINK = new Object(){
         @Override
         public String toString() {
             return "BTreeMap.LINK";
         }
     };
 
-    static Object leafGet(Node node, Comparator comparator, Object key, GroupSerializer keySerializer, GroupSerializer valueSerializer){
+    public static Object leafGet(Node node, Comparator comparator, Object key, GroupSerializer keySerializer, GroupSerializer valueSerializer){
         int pos = keySerializer.valueArraySearch(node.keys, key, comparator);
         return leafGet(node, pos, keySerializer, valueSerializer);
     }
 
-    static Object leafGet(Node node, int pos, GroupSerializer keySerializer, GroupSerializer valueSerializer){
+    public static Object leafGet(Node node, int pos, GroupSerializer keySerializer, GroupSerializer valueSerializer){
 
         if(pos<0+1-node.intLeftEdge()) {
             if(!node.isRightEdge() && pos<-keySerializer.valueArraySize(node.keys))
@@ -397,9 +398,9 @@ public class BTreeMapJava {
             implements NavigableSet<E>,
             Closeable, Serializable {
 
-        protected final ConcurrentNavigableMap2<E,Object> m;
+        public final ConcurrentNavigableMap2<E,Object> m;
         private final boolean hasValues;
-        KeySet(ConcurrentNavigableMap2<E,Object> map, boolean hasValues) {
+        public KeySet(ConcurrentNavigableMap2<E,Object> map, boolean hasValues) {
             m = map;
             this.hasValues = hasValues;
         }
@@ -618,7 +619,7 @@ public class BTreeMapJava {
 
 
 
-    static protected  class SubMap<K,V> extends AbstractMap<K,V> implements  ConcurrentNavigableMap2<K,V> {
+    public static class SubMap<K,V> extends AbstractMap<K,V> implements  ConcurrentNavigableMap2<K,V> {
 
         protected final ConcurrentNavigableMapExtra<K,V> m;
 
@@ -1088,7 +1089,7 @@ public class BTreeMapJava {
         K lastKey2();
     }
 
-    static protected  class DescendingMap<K,V> extends AbstractMap<K,V> implements  ConcurrentNavigableMap2<K,V> {
+    public static class DescendingMap<K,V> extends AbstractMap<K,V> implements ConcurrentNavigableMap2<K,V> {
 
         protected final ConcurrentNavigableMapExtra<K,V> m;
 

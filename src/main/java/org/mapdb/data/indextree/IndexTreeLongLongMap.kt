@@ -1,4 +1,4 @@
-package org.mapdb
+package org.mapdb.data.indextree
 
 import org.eclipse.collections.api.LazyLongIterable
 import org.eclipse.collections.api.LongIterable
@@ -11,7 +11,6 @@ import org.eclipse.collections.api.block.predicate.primitive.LongPredicate
 import org.eclipse.collections.api.block.procedure.Procedure
 import org.eclipse.collections.api.block.procedure.primitive.LongLongProcedure
 import org.eclipse.collections.api.block.procedure.primitive.LongProcedure
-import org.eclipse.collections.api.collection.MutableCollection
 import org.eclipse.collections.api.collection.primitive.ImmutableLongCollection
 import org.eclipse.collections.api.collection.primitive.MutableLongCollection
 import org.eclipse.collections.api.iterator.MutableLongIterator
@@ -30,8 +29,6 @@ import org.eclipse.collections.impl.factory.primitive.LongLongMaps
 import org.eclipse.collections.impl.factory.primitive.LongSets
 import org.eclipse.collections.impl.lazy.AbstractLazyIterable
 import org.eclipse.collections.impl.lazy.primitive.LazyLongIterableAdapter
-import org.eclipse.collections.impl.list.mutable.ArrayListAdapter
-import org.eclipse.collections.impl.list.mutable.primitive.LongArrayList
 import org.eclipse.collections.impl.map.mutable.primitive.LongLongHashMap
 import org.eclipse.collections.impl.primitive.AbstractLongIterable
 import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet
@@ -39,26 +36,27 @@ import org.eclipse.collections.impl.set.mutable.primitive.SynchronizedLongSet
 import org.eclipse.collections.impl.set.mutable.primitive.UnmodifiableLongSet
 import org.eclipse.collections.impl.tuple.primitive.PrimitiveTuples
 import org.eclipse.collections.impl.utility.internal.primitive.LongIterableIterate
-import org.mapdb.IndexTreeListJava.*
+import org.mapdb.*
+import org.mapdb.data.indextree.IndexTreeListJava.*
 import java.io.IOException
 import java.util.*
 
 /**
  * Primitive Sorted Map<Long,Long.
  */
-public class IndexTreeLongLongMap(
-    val store:Store,
-    val rootRecid:Long,
-    val dirShift:Int,
-    val levels:Int,
-    val collapseOnRemove:Boolean
+internal class IndexTreeLongLongMap(
+        val store: Store,
+        val rootRecid:Long,
+        val dirShift:Int,
+        val levels:Int,
+        val collapseOnRemove:Boolean
 ): AbstractLongIterable(), MutableLongLongMap {
 
 
     companion object{
         /** constructor with default values */
         fun make(
-                store:Store = StoreTrivial(),
+                store: Store = StoreTrivial(),
                 rootRecid:Long = store.put(dirEmpty(), dirSer),
                 dirShift: Int = CC.INDEX_TREE_LONGLONGMAP_DIR_SHIFT,
                 levels:Int = CC.INDEX_TREE_LONGLONGMAP_LEVELS,
@@ -130,7 +128,7 @@ public class IndexTreeLongLongMap(
     }
 
     private class Iterator(
-            val m:IndexTreeLongLongMap,
+            val m: IndexTreeLongLongMap,
             val index:Int
         ):MutableLongIterator{
 

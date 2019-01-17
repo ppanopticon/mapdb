@@ -2,6 +2,7 @@ package org.mapdb.issues;
 
 import org.junit.Test;
 import org.mapdb.*;
+import org.mapdb.data.hashmap.HTreeMap;
 
 import java.io.File;
 import java.util.Set;

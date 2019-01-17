@@ -3,13 +3,14 @@ package org.mapdb
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.mapdb.data.treemap.TreeMapMaker
 import java.io.IOException
 import java.util.*
 
 
 @RunWith(Parameterized::class)
 class BTreeMap_PumpTest(
-        val mapMaker:DB.TreeMapMaker<Any?, Any?>
+        val mapMaker: TreeMapMaker<Any?, Any?>
 ) {
 
     companion object {

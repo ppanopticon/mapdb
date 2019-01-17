@@ -3,6 +3,7 @@ package org.mapdb
 import org.fest.reflect.core.Reflection
 import org.junit.Assert.*
 import org.junit.Test
+import org.mapdb.data.hashmap.HTreeMap
 import org.mapdb.volume.SingleByteArrayVol
 import java.io.*
 import java.util.*
@@ -12,21 +13,21 @@ import java.util.concurrent.locks.*
 
 class HTreeMapTest{
 
-    val HTreeMap<*,*>.leafSerializer: Serializer<Array<Any>>
+    val HTreeMap<*, *>.leafSerializer: Serializer<Array<Any>>
         get() = Reflection.method("getLeafSerializer").`in`(this).invoke() as Serializer<Array<Any>>
 
-    val HTreeMap<*,*>.locks:  Array<ReadWriteLock?>
+    val HTreeMap<*, *>.locks:  Array<ReadWriteLock?>
         get() = Reflection.method("getLocks").`in`(this).invoke() as  Array<ReadWriteLock?>
 
 
-    fun HTreeMap<*,*>.hashToSegment(h: Int): Int =
+    fun HTreeMap<*, *>.hashToSegment(h: Int): Int =
             Reflection.method("hashToSegment")
                     .withParameterTypes(h.javaClass)
                     .`in`(this)
                     .invoke(h) as Int
 
 
-    fun HTreeMap<*,*>.hash(o: Any): Int =
+    fun HTreeMap<*, *>.hash(o: Any): Int =
             Reflection.method("hash")
                     .withParameterTypes(Any::class.java)
                     .`in`(this)
@@ -217,7 +218,7 @@ class HTreeMapTest{
     @Test fun mod_listener_lock2() {
         val db = DBMaker.memoryDB().make()
         val counter = AtomicInteger()
-        var m:HTreeMap<String,String>? = null
+        var m: HTreeMap<String, String>? = null
         var seg:Int? = null
         m = db.hashMap("name", Serializer.STRING, Serializer.STRING)
             .modificationListener(MapModificationListener { key, oldVal, newVal, triggered ->
@@ -383,7 +384,7 @@ class HTreeMapTest{
     @Test fun mod_listener_lock() {
         val db = DBMaker.memoryDB().make()
         val counter = AtomicInteger()
-        var m:HTreeMap<String,String>? = null;
+        var m: HTreeMap<String, String>? = null;
         m = db.hashMap("name", Serializer.STRING, Serializer.STRING)
                 .modificationListener(object : MapModificationListener<String,String> {
                     override fun modify(key: String, oldValue: String?, newValue: String?, triggered: Boolean) {

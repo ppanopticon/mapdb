@@ -18,6 +18,7 @@ package org.mapdb;
  */
 
 import junit.framework.TestCase;
+import org.mapdb.data.treemap.BTreeMap;
 
 import java.util.*;
 import java.util.Map.Entry;

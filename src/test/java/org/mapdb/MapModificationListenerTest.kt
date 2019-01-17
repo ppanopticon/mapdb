@@ -2,6 +2,8 @@ package org.mapdb
 
 import org.junit.Assert
 import org.junit.Test
+import org.mapdb.data.treemap.BTreeMap
+import org.mapdb.data.hashmap.HTreeMap
 import java.util.*
 
 /**

@@ -2,8 +2,8 @@ package org.mapdb
 
 import org.junit.Test
 import org.junit.Assert.*
+import org.mapdb.data.hashmap.HTreeMap
 import org.mapdb.volume.SingleByteArrayVol
-import org.mapdb.volume.Volume
 import java.util.*
 
 class HTreeMapExpirationTest {
@@ -211,7 +211,7 @@ class HTreeMapExpirationTest {
     }
 
 
-    fun maxSizeTest(map:HTreeMap<Int,Int>) {
+    fun maxSizeTest(map: HTreeMap<Int, Int>) {
         assertTrue(map.expireCreateQueues != null)
 
         for (i in 0 until 10000) {

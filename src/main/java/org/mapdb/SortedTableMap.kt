@@ -1,5 +1,6 @@
 package org.mapdb
 
+import org.mapdb.data.treemap.BTreeMapJava
 import org.mapdb.serializer.GroupSerializer
 import org.mapdb.volume.Volume
 import java.util.*

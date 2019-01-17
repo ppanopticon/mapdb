@@ -7,6 +7,7 @@ import org.eclipse.collections.api.set.primitive.MutableLongSet
 import org.eclipse.collections.impl.map.mutable.primitive.LongLongHashMap
 import org.junit.Assert.*
 import org.junit.Test
+import org.mapdb.data.indextree.IndexTreeLongLongMap
 import org.mapdb.indexTreeLongLongMapTests_GS_GENERATED.*
 import java.util.*
 

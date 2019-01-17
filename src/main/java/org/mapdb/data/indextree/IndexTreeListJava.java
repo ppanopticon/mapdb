@@ -1,6 +1,6 @@
-package org.mapdb;
+package org.mapdb.data.indextree;
 
-import org.jetbrains.annotations.NotNull;
+import org.mapdb.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,12 +8,12 @@ import java.util.Arrays;
 /**
  * Java utils for TreeArrayList
  */
-class IndexTreeListJava {
-    static final int maxDirShift = 7;
+public class IndexTreeListJava {
+    public static final int maxDirShift = 7;
 
-    static final long full = 0xFFFFFFFFFFFFFFFFL;
+    public static final long full = 0xFFFFFFFFFFFFFFFFL;
 
-    static final Serializer<long[]> dirSer =  new Serializer<long[]>() {
+    public static final Serializer<long[]> dirSer =  new Serializer<>() {
         @Override
         public void serialize(DataOutput2 out, long[] value) throws IOException {
 
@@ -77,12 +77,12 @@ class IndexTreeListJava {
     };
 
 
-    static long[] dirEmpty(){
+    public static long[] dirEmpty(){
         return new long[2];
     }
 
     /** converts hash slot into actual offset in dir array, using bitmap */
-    static final int dirOffsetFromSlot(long[] dir, int slot) {
+    public static final int dirOffsetFromSlot(long[] dir, int slot) {
         if(CC.ASSERT && slot>127)
             throw new DBException.DataCorruption("slot too high");
 
@@ -105,7 +105,7 @@ class IndexTreeListJava {
         return -offset + v2*offset;
     }
 
-    static final int dirOffsetFromLong(long bitmap1, long bitmap2, int slot) {
+    public static final int dirOffsetFromLong(long bitmap1, long bitmap2, int slot) {
         if(CC.ASSERT && slot>127)
             throw new DBException.DataCorruption("slot too high");
 
@@ -129,7 +129,7 @@ class IndexTreeListJava {
     }
 
 
-    static final long[] dirPut(long[] dir_, int slot, long v1, long v2){
+    public static final long[] dirPut(long[] dir_, int slot, long v1, long v2){
         int offset = dirOffsetFromSlot(dir_, slot);
         //make copy and expand it if necessary
         if (offset < 0) {
@@ -150,7 +150,7 @@ class IndexTreeListJava {
         return dir_;
     }
 
-    static final long[] dirRemove(long[] dir, final int slot){
+    public static final long[] dirRemove(long[] dir, final int slot){
         int offset = dirOffsetFromSlot(dir, slot);
         if(CC.ASSERT && offset<=0){
             throw new DBException.DataCorruption("offset too low");
@@ -176,7 +176,7 @@ class IndexTreeListJava {
      * @param index in tree
      * @return value recid, 0 if not found
      */
-    static final long treeGet(int dirShift, long recid, StoreImmutable store, int level, final long index) {
+    public static final long treeGet(int dirShift, long recid, StoreImmutable store, int level, final long index) {
         if(CC.ASSERT && index<0)
             throw new AssertionError();
         if(CC.ASSERT && index>>>(level*dirShift)!=0)
@@ -277,7 +277,7 @@ class IndexTreeListJava {
         throw new DBException.DataCorruption("Cyclic reference in TreeArrayList");
     }
 
-    static final Long treeGetNullable(int dirShift, long recid, StoreImmutable store, int level, long index) {
+    public static final Long treeGetNullable(int dirShift, long recid, StoreImmutable store, int level, long index) {
         if(CC.ASSERT && index<0)
             throw new AssertionError();
         if(CC.ASSERT && index>>>(level*dirShift)!=0)
@@ -313,12 +313,12 @@ class IndexTreeListJava {
     }
 
 
-    protected static int treePos(int dirShift, int level, long index) {
+    public static int treePos(int dirShift, int level, long index) {
         int shift = dirShift*level;
         return (int) ((index >>> shift) & ((1<<dirShift)-1));
     }
 
-    static final void treePut(
+    public static final void treePut(
             int dirShift,
             long recid,
             final Store store,
@@ -401,7 +401,7 @@ class IndexTreeListJava {
         return store.put(dir, dirSer);
     }
 
-    static boolean treeRemove(int dirShift,
+    public static boolean treeRemove(int dirShift,
                               long recid,
                               Store store,
                               int level,
@@ -454,7 +454,7 @@ class IndexTreeListJava {
 
     static final long[] treeRemoveCollapsingTrue = new long[0];
 
-    static long[] treeRemoveCollapsing(
+    public static long[] treeRemoveCollapsing(
                                 int dirShift,
                                 long recid,
                                 Store store,
@@ -582,7 +582,7 @@ class IndexTreeListJava {
         return null;
     }
 
-    interface TreeTraverseCallback<V>{
+    public interface TreeTraverseCallback<V>{
         V visit(long key, long value,V foldValue);
     }
 

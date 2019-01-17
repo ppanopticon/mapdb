@@ -1,10 +1,11 @@
-package org.mapdb
+package org.mapdb.data.treemap
 
 import org.eclipse.collections.api.list.primitive.MutableLongList
 import org.eclipse.collections.impl.list.mutable.primitive.LongArrayList
 import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet
 import org.eclipse.collections.impl.stack.mutable.primitive.LongArrayStack
-import org.mapdb.BTreeMapJava.*
+import org.mapdb.*
+import org.mapdb.data.treemap.BTreeMapJava.*
 import org.mapdb.serializer.GroupSerializer
 import java.io.Closeable
 import java.io.ObjectStreamException
@@ -73,16 +74,16 @@ class BTreeMap<K,V>(
         override val keySerializer:GroupSerializer<K>,
         override val valueSerializer:GroupSerializer<V>,
         val rootRecidRecid:Long,
-        val store:Store,
+        val store: Store,
         val valueInline:Boolean,
         val maxNodeSize:Int,
         val comparator:Comparator<K>,
         override val isThreadSafe:Boolean,
         val counterRecid:Long,
         override val hasValues:Boolean,
-        private val modificationListeners: Array<MapModificationListener<K,V>>?
-):Verifiable, Closeable, Serializable, ConcurrencyAware,
-        ConcurrentNavigableMap<K, V>, ConcurrentNavigableMapExtra<K,V> {
+        private val modificationListeners: Array<MapModificationListener<K, V>>?
+): Verifiable, Closeable, Serializable, ConcurrencyAware,
+        ConcurrentNavigableMap<K, V>, ConcurrentNavigableMapExtra<K, V> {
 
 
     companion object {
@@ -92,13 +93,13 @@ class BTreeMap<K,V>(
                 store: Store = StoreTrivial(),
                 valueInline: Boolean = true,
                 //insert recid of new empty node
-                rootRecidRecid: Long = putEmptyRoot(store, keySerializer, if(valueInline) valueSerializer else Serializer.RECID),
-                maxNodeSize: Int =  CC.BTREEMAP_MAX_NODE_SIZE ,
+                rootRecidRecid: Long = putEmptyRoot(store, keySerializer, if (valueInline) valueSerializer else Serializer.RECID),
+                maxNodeSize: Int = CC.BTREEMAP_MAX_NODE_SIZE,
                 comparator: Comparator<K> = keySerializer,
                 isThreadSafe:Boolean = true,
                 counterRecid:Long=0L,
                 hasValues:Boolean = true,
-                modificationListeners: Array<MapModificationListener<K,V>>? = null
+                modificationListeners: Array<MapModificationListener<K, V>>? = null
         ) =
                 BTreeMap(
                         keySerializer = keySerializer,
@@ -188,9 +189,9 @@ class BTreeMap<K,V>(
     }
 
     init{
-        if(BTreeMap.NO_VAL_SERIALIZER==valueSerializer && hasValues)
+        if(NO_VAL_SERIALIZER ==valueSerializer && hasValues)
             throw IllegalArgumentException("wrong value serializer")
-        if(BTreeMap.NO_VAL_SERIALIZER!=valueSerializer && !hasValues)
+        if(NO_VAL_SERIALIZER !=valueSerializer && !hasValues)
             throw IllegalArgumentException("wrong value serializer")
         if(maxNodeSize<4)
             throw IllegalArgumentException("maxNodeSize too small")
@@ -1006,7 +1007,7 @@ class BTreeMap<K,V>(
         }
     }
 
-    abstract class BTreeIterator<K,V>(val m:BTreeMap<K,V>){
+    abstract class BTreeIterator<K,V>(val m: BTreeMap<K, V>){
 
         protected var currentPos = -1
         protected var currentLeaf:Node? = null
@@ -1440,7 +1441,7 @@ class BTreeMap<K,V>(
         }
     }
 
-    abstract class DescendingIterator<K,V>(val m:BTreeMap<K,V>){
+    abstract class DescendingIterator<K,V>(val m: BTreeMap<K, V>){
 
         protected val descLeafIter = m.descendingLeafIterator(null)
         protected var currentPos = -1
@@ -1495,7 +1496,7 @@ class BTreeMap<K,V>(
 
 
     abstract class DescendingBoundIterator<K,V>(
-            val m:BTreeMap<K,V>,
+            val m: BTreeMap<K, V>,
             val lo:K?,
             val loInclusive:Boolean,
             val hi:K?,

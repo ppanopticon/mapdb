@@ -5,10 +5,14 @@ import org.eclipse.collections.impl.set.mutable.primitive.LongHashSet
 import org.fest.reflect.core.Reflection
 import org.junit.Assert.*
 import org.junit.Test
-import org.mapdb.StoreAccess.*
+import org.mapdb.data.Maker
+import org.mapdb.data.indextree.IndexTreeList
+import org.mapdb.data.indextree.IndexTreeLongLongMap
+import org.mapdb.data.indextree.IndexTreeLongLongMapMaker
+import org.mapdb.data.treemap.BTreeMap
+import org.mapdb.data.treemap.BTreeMapJava
 import org.mapdb.elsa.ElsaSerializerPojo
 import org.mapdb.serializer.GroupSerializerObjectArray
-import java.io.File
 import java.io.NotSerializableException
 import java.io.Serializable
 import java.math.BigDecimal
@@ -24,9 +28,9 @@ class DBTest{
         get() = Reflection.method("getExecutors").`in`(this).invoke() as MutableSet<ExecutorService>
 
     //TODO remove this once LongLongMap is thread safe
-    fun DB.indexTreeLongLongMap(name:String) =
+    internal fun DB.indexTreeLongLongMap(name:String) =
         Reflection.method("indexTreeLongLongMap").withParameterTypes(java.lang.String::class.java).
-                `in`(this).invoke(name) as DB.IndexTreeLongLongMapMaker
+                `in`(this).invoke(name) as IndexTreeLongLongMapMaker
 
     @Test fun store_consistent(){
         val store = StoreTrivial()
@@ -653,8 +657,8 @@ class DBTest{
 
     }
 
-    fun btreemap(set: NavigableSet<*>):BTreeMap<*,*>{
-        return (set as BTreeMapJava.KeySet).m as BTreeMap<*,*>
+    fun btreemap(set: NavigableSet<*>): BTreeMap<*, *> {
+        return (set as BTreeMapJava.KeySet).m as BTreeMap<*, *>
     }
 
     @Test fun hashSet_Create_Multi_Store(){
@@ -892,7 +896,7 @@ class DBTest{
 
     @Test fun indexTreeList_create(){
         val db = DBMaker.memoryDB().make()
-        val list:IndexTreeList<Int> = db.indexTreeList("map", Serializer.INTEGER).make();
+        val list: IndexTreeList<Int> = db.indexTreeList("map", Serializer.INTEGER).make();
         list.add(11)
         assertEquals(1, list.size)
     }
@@ -928,7 +932,7 @@ class DBTest{
 
 
     @Test fun weakref_test(){
-        fun test(f:(db:DB)->DB.Maker<*>){
+        fun test(f:(db:DB)-> Maker<*>){
             var db = DBMaker.memoryDB().make()
             var c = f(db).make()
             assertTrue(c===f(db).make())

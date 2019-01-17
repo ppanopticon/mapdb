@@ -5,6 +5,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.mapdb.data.treemap.BTreeMap
 import org.mapdb.guavaTests.ConcurrentMapInterfaceTest
 import org.mapdb.serializer.GroupSerializer
 import java.io.IOException

@@ -3,8 +3,9 @@ package org.mapdb
 import org.eclipse.collections.impl.map.mutable.primitive.LongLongHashMap
 import org.junit.Assert.*
 import org.junit.Test
+import org.mapdb.data.indextree.IndexTreeListJava
 
-import org.mapdb.IndexTreeListJava.*;
+import org.mapdb.data.indextree.IndexTreeListJava.*;
 import java.util.*
 
 class IndexTreeListTest{

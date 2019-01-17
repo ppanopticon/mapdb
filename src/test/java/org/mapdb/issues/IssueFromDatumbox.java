@@ -1,12 +1,11 @@
 package org.mapdb.issues;
 
 import org.junit.Test;
-import org.mapdb.Atomic;
+import org.mapdb.data.primitive.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.TT;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 

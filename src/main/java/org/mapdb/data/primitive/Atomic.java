@@ -21,10 +21,10 @@
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/licenses/publicdomain
  */
-package org.mapdb;
+package org.mapdb.data.primitive;
 
-import java.io.DataInput;
-import java.io.IOException;
+import org.mapdb.Serializer;
+import org.mapdb.Store;
 
 /**
  * <p>

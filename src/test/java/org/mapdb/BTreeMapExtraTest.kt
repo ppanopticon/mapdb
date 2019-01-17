@@ -1,5 +1,7 @@
 package org.mapdb
 
+import org.mapdb.data.treemap.BTreeMap
+
 class BTreeMapExtraTest:MapExtraTest(){
 
     override fun makeMap(): MapExtra<Int?, String?> {
